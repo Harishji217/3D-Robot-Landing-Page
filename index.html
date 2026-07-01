@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>NEXUS — Autonomous Robotics</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050508;--bg-elevated:#0d0d12;--bg-card:#111116;--fg:#f0f0f5;--fg-muted:#8a8a9a;--fg-subtle:#5a5a6a;--accent:#00ff88;--accent-dim:rgba(0,255,136,0.15);--accent-glow:rgba(0,255,136,0.4);--card-border:#1e1e28;--border:#2a2a3a;--font-display:'Syne',sans-serif;--font-body:'Space Grotesk',sans-serif;--container:1280px;--nav-height:80px;--transition-slow:.5s cubic-bezier(.4,0,.2,1);--transition-base:.3s cubic-bezier(.4,0,.2,1);--transition-fast:.15s cubic-bezier(.4,0,.2,1)}
+*,::after,::before{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:var(--font-body);background:var(--bg);color:var(--fg);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+ul{list-style:none}
+.container{width:100%;max-width:var(--container);margin:0 auto;padding:0 24px}
+.section-tag{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.section-title{font-family:var(--font-display);font-size:clamp(2.5rem,5vw,4rem);font-weight:700;line-height:1.1;letter-spacing:-.02em}
+.btn{display:inline-flex;align-items:center;gap:12px;padding:16px 32px;font-size:.9375rem;font-weight:600;letter-spacing:.02em;border-radius:10px;transition:var(--transition-fast);overflow:hidden}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:#00cc6a;transform:translateY(-2px);box-shadow:0 12px 40px var(--accent-glow)}
+.btn-secondary{background:0 0;color:var(--fg);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--fg-muted);background:var(--bg-elevated)}
+.btn-arrow{width:20px;height:20px;flex-shrink:0;transition:var(--transition-fast)}
+.btn-primary:hover .btn-arrow{transform:translateX(4px)}
+/* Nav */
+.nav{position:fixed;top:0;left:0;right:0;height:var(--nav-height);z-index:1001;background:rgba(5,5,8,.8);backdrop-filter:blur(20px);border-bottom:1px solid transparent;transition:var(--transition-base)}
+.nav.scrolled{border-color:var(--border);background:rgba(5,5,8,.95)}
+.nav-container{display:flex;align-items:center;justify-content:space-between;height:100%;max-width:var(--container);margin:0 auto;padding:0 24px}
+.nav-logo{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-size:1.5rem;font-weight:700;letter-spacing:-.02em}
+.logo-icon{width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent),#00d4aa);border-radius:10px;font-size:1.25rem;color:var(--bg)}
+.nav-links{display:flex;align-items:center;gap:8px}
+.nav-link{padding:10px 16px;font-size:.9rem;font-weight:500;color:var(--fg-muted);border-radius:8px;transition:var(--transition-fast)}
+.nav-link:hover{color:var(--fg)}
+.nav-link.cta-nav{background:var(--accent);color:var(--bg);padding:12px 24px;margin-left:8px}
+.nav-link.cta-nav:hover{background:#00cc6a}
+.nav-toggle{display:none;flex-direction:column;gap:5px;padding:8px;background:0 0;border:none;cursor:pointer}
+.nav-toggle span{width:24px;height:2px;background:var(--fg);border-radius:2px;transition:var(--transition-fast)}
+/* Hero */
+.hero{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.hero-background{position:absolute;top:0;left:0;right:0;bottom:0;z-index:0;background:var(--bg)}
+#heroCanvas{display:block;width:100vw;height:100vh;position:fixed;top:0;left:0;pointer-events:none;z-index:9999}
+.hero-gradient{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 80% 50% at 50% 20%,rgba(0,255,136,.12) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(0,200,255,.08) 0%,transparent 50%)}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,#000 30%,transparent 100%)}
+.hero-content{position:relative;z-index:1;text-align:center;padding:120px 24px 80px;max-width:900px;margin:0 auto}
+.hero-badge{display:inline-flex;align-items:center;gap:10px;padding:10px 20px;background:var(--bg-card);border:1px solid var(--border);border-radius:100px;font-size:.875rem;font-weight:500;color:var(--fg-muted);margin-bottom:32px}
+.badge-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 var(--accent-glow)}50%{box-shadow:0 0 0 12px transparent}}
+.hero-title{font-family:var(--font-display);font-size:clamp(3rem,7vw,6rem);font-weight:700;line-height:1.05;letter-spacing:-.03em;margin-bottom:24px}
+.title-line{display:block}
+.title-accent{background:linear-gradient(135deg,var(--accent) 0%,#00d4aa 50%,#00ffaa 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-subtitle{font-size:clamp(1.125rem,2vw,1.375rem);color:var(--fg-muted);max-width:700px;margin:0 auto 48px}
+.hero-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:64px}
+.hero-stats{display:flex;gap:48px;justify-content:center;flex-wrap:wrap}
+.stat{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.stat-value{font-family:var(--font-display);font-size:clamp(2.5rem,4vw,3.5rem);font-weight:700;color:var(--fg);line-height:1}
+.stat-suffix{font-family:var(--font-display);font-size:clamp(1.5rem,2.5vw,2rem);font-weight:700;color:var(--accent)}
+.stat-label{font-size:.875rem;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:.1em}
+.hero-scroll{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:12px;color:var(--fg-subtle);font-size:.8125rem;font-weight:500;text-transform:uppercase;letter-spacing:.1em;animation:scrollBounce 3s ease-in-out infinite;z-index:1}
+.hero-scroll svg{width:28px;height:28px}
+@keyframes scrollBounce{0%,100%,20%{transform:translateX(-50%) translateY(0)}10%{transform:translateX(-50%) translateY(10px)}}
+/* Features */
+.features{padding:120px 0;background:var(--bg)}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:64px}
+.feature-card{background:var(--bg-card);border:1px solid var(--card-border);border-radius:20px;padding:40px 32px;transition:var(--transition-base)}
+.feature-card:hover{border-color:var(--border);transform:translateY(-8px);box-shadow:0 24px 60px rgba(0,0,0,.4)}
+.feature-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),#00d4aa);border-radius:20px 20px 0 0;opacity:0;transition:var(--transition-fast)}
+.feature-card:hover::before{opacity:1}
+.feature-icon{width:56px;height:56px;border-radius:14px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;margin-bottom:24px;color:var(--accent);transition:var(--transition-fast)}
+.feature-card:hover .feature-icon{background:var(--accent);color:var(--bg);transform:scale(1.05)}
+.feature-icon svg{width:28px;height:28px}
+.feature-title{font-family:var(--font-display);font-size:1.375rem;font-weight:600;margin-bottom:12px}
+.feature-desc{color:var(--fg-muted);font-size:1rem;line-height:1.7}
+.feature-tag{display:inline-block;margin-top:20px;padding:6px 14px;background:var(--bg);border:1px solid var(--border);border-radius:100px;font-size:.75rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.1em}
+/* Specs */
+.specs{padding:120px 0;background:var(--bg-elevated)}
+.specs::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent)}
+.specs-layout{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start;margin-top:64px}
+.specs-list{display:flex;flex-direction:column;gap:16px}
+.spec-item{display:grid;grid-template-columns:80px 1fr;gap:24px;align-items:center;padding:24px;background:var(--bg-card);border:1px solid var(--card-border);border-radius:14px}
+.spec-item:hover{border-color:var(--border)}
+.spec-label{font-family:var(--font-display);font-size:.875rem;font-weight:600;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:.1em}
+.spec-value{font-size:1.125rem;color:var(--fg);font-weight:500}
+.spec-value.highlight{color:var(--accent);font-family:var(--font-display)}
+/* About */
+.about{padding:120px 0;background:var(--bg)}
+.about-layout{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;margin-top:64px}
+.about-text p{font-size:1.125rem;color:var(--fg-muted);line-height:1.8;margin-bottom:20px}
+.about-principles{display:flex;flex-direction:column;gap:20px}
+.principle{display:flex;gap:16px;padding:20px;background:var(--bg-card);border:1px solid var(--card-border);border-radius:14px}
+.principle-number{font-family:var(--font-display);font-size:1.5rem;font-weight:700;color:var(--accent);opacity:.3;min-width:48px}
+.principle h3{font-family:var(--font-display);font-size:1.125rem;font-weight:600;margin-bottom:6px}
+.principle p{font-size:.9375rem;color:var(--fg-muted);margin:0}
+.about-visual{position:relative;width:100%;aspect-ratio:1;max-width:500px;margin:0 auto}
+.about-orb{position:absolute;top:50%;left:50%;width:200px;height:200px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle at 30% 30%,var(--accent-dim) 0%,transparent 60%);animation:orbPulse 4s ease-in-out infinite}
+@keyframes orbPulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.5}50%{transform:translate(-50%,-50%) scale(1.1);opacity:.8}}
+.about-ring{position:absolute;top:50%;left:50%;border:1px solid var(--accent);border-radius:50%;opacity:.2;animation:ringRotate 20s linear infinite}
+#aboutRing1{width:280px;height:280px;transform:translate(-50%,-50%) rotateX(70deg);animation-duration:30s}
+#aboutRing2{width:360px;height:360px;transform:translate(-50%,-50%) rotateX(70deg) rotateZ(30deg);animation-duration:40s;animation-direction:reverse}
+#aboutRing3{width:440px;height:440px;transform:translate(-50%,-50%) rotateX(70deg) rotateZ(60deg);animation-duration:50s}
+@keyframes ringRotate{to{transform:translate(-50%,-50%) rotateX(70deg) rotateZ(360deg)}}
+.about-pulse{position:absolute;top:50%;left:50%;width:120px;height:120px;transform:translate(-50%,-50%);border-radius:50%;border:2px solid var(--accent);opacity:0;animation:pulseRing 3s ease-out infinite}
+@keyframes pulseRing{0%{transform:translate(-50%,-50%) scale(.5);opacity:.8}100%{transform:translate(-50%,-50%) scale(2);opacity:0}}
+/* Trust */
+.trust{padding:120px 0;background:var(--bg-elevated)}
+.trust-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:64px}
+.trust-card{background:var(--bg-card);border:1px solid var(--card-border);border-radius:20px;padding:40px 32px;text-align:center}
+.trust-card:hover{border-color:var(--border)}
+.trust-logo{width:64px;height:64px;margin:0 auto 24px;opacity:.6;filter:grayscale(1);transition:var(--transition-fast)}
+.trust-card:hover .trust-logo{opacity:1;filter:grayscale(0)}
+.trust-card h3{font-family:var(--font-display);font-size:1.25rem;font-weight:600;margin-bottom:8px}
+.trust-card p{color:var(--fg-muted);font-size:.9375rem}
+.trust-logos{margin-top:64px;overflow:hidden}
+.logos-track{display:flex;gap:60px;animation:logosScroll 30s linear infinite;width:max-content}
+@keyframes logosScroll{to{transform:translateX(-50%)}}
+/* Contact */
+.contact{position:relative;padding:120px 0;background:var(--bg);overflow:hidden}
+.contact-layout{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start;position:relative;z-index:1}
+.contact-description{font-size:1.125rem;color:var(--fg-muted);margin-bottom:40px;line-height:1.7}
+.contact-form{display:flex;flex-direction:column;gap:24px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.form-group{display:flex;flex-direction:column;gap:8px}
+label{font-size:.875rem;font-weight:500;color:var(--fg-muted);margin-bottom:8px}
+input,textarea,select{font-family:inherit;font-size:1rem;background:var(--bg-card);border:1px solid var(--border);color:var(--fg);border-radius:8px;padding:14px 16px;width:100%;transition:var(--transition-fast)}
+input:focus,textarea:focus,select:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+.contact-visual{position:sticky;top:120px}
+.contact-card{background:var(--bg-card);border:1px solid var(--card-border);border-radius:24px;padding:40px;overflow:hidden}
+.contact-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),#00d4aa)}
+.card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;gap:16px}
+.card-badge{background:var(--accent-dim);color:var(--accent);padding:6px 14px;border-radius:100px;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em}
+.card-status{color:#ffaa00;font-size:.875rem;font-weight:500;white-space:nowrap}
+.card-specs{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:32px;padding-bottom:32px;border-bottom:1px solid var(--card-border)}
+.card-spec{display:flex;flex-direction:column;gap:6px}
+.spec-label{font-size:.8125rem;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:.05em}
+.card-spec .spec-value{font-family:var(--font-display);font-size:1.5rem;font-weight:700;color:var(--fg)}
+.card-includes h4{font-family:var(--font-display);font-size:1rem;font-weight:600;margin-bottom:16px}
+.card-includes ul{display:flex;flex-direction:column;gap:12px}
+.card-includes li{display:flex;align-items:center;gap:12px;color:var(--fg-muted);font-size:.9375rem}
+.card-includes li::before{content:'\2713';width:20px;height:20px;border-radius:6px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:.75rem;font-weight:700;flex-shrink:0}
+/* Footer */
+.footer{background:var(--bg-elevated);border-top:1px solid var(--border);padding:80px 0 40px}
+.footer-grid{display:grid;grid-template-columns:2fr repeat(4,1fr);gap:48px;margin-bottom:64px}
+.footer-brand p{color:var(--fg-muted);margin:20px 0 24px;max-width:300px;font-size:.9375rem;line-height:1.7}
+.footer-social{display:flex;gap:12px}
+.social-link{width:40px;height:40px;border-radius:10px;background:var(--bg-card);border:1px solid var(--card-border);display:flex;align-items:center;justify-content:center;color:var(--fg-muted);transition:var(--transition-fast)}
+.social-link:hover{background:var(--accent);border-color:var(--accent);color:var(--bg);transform:translateY(-2px)}
+.social-link svg{width:20px;height:20px}
+.footer-column h4{font-family:var(--font-display);font-size:1rem;font-weight:600;margin-bottom:20px}
+.footer-column ul{display:flex;flex-direction:column;gap:12px}
+.footer-column a{color:var(--fg-muted);font-size:.9375rem;transition:var(--transition-fast)}
+.footer-column a:hover{color:var(--accent)}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:32px;border-top:1px solid var(--border);color:var(--fg-subtle);font-size:.875rem}
+/* Responsive */
+@media(max-width:1024px){
+.specs-layout{grid-template-columns:1fr;gap:48px}
+.about-layout{grid-template-columns:1fr;gap:60px}
+.contact-layout{grid-template-columns:1fr;gap:48px}
+.contact-visual{position:static}
+.footer-grid{grid-template-columns:1fr 1fr 1fr 1fr}
+.footer-brand{grid-column:span 4}
+}
+@media(max-width:768px){
+.nav-links{position:fixed;top:var(--nav-height);left:0;right:0;background:var(--bg);flex-direction:column;padding:24px;gap:8px;border-bottom:1px solid var(--border);transform:translateY(-100%);opacity:0;visibility:hidden;transition:var(--transition-base)}
+.nav-links.active{transform:translateY(0);opacity:1;visibility:visible}
+.nav-toggle{display:flex}
+.features-grid,.trust-grid{grid-template-columns:1fr}
+.form-row{grid-template-columns:1fr}
+.card-specs{grid-template-columns:1fr}
+.footer-grid{grid-template-columns:1fr 1fr}
+.footer-brand{grid-column:span 2}
+.footer-bottom{flex-direction:column;gap:16px;text-align:center}
+}
+@media(max-width:480px){
+.hero-stats{gap:32px}
+.features-grid,.trust-grid{gap:16px}
+.feature-card,.trust-card{padding:24px 20px}
+}
+</style>
+</head>
+<body>
+<nav class="nav" id="nav">
+<div class="nav-container">
+<a href="#" class="nav-logo"><span class="logo-icon">⬡</span><span class="logo-text">NEXUS</span></a>
+<div class="nav-links" id="navLinks">
+<a href="#features" class="nav-link">Capabilities</a>
+<a href="#specs" class="nav-link">Specifications</a>
+<a href="#about" class="nav-link">Philosophy</a>
+<a href="#contact" class="nav-link cta-nav">Reserve</a>
+</div>
+<button class="nav-toggle" id="navToggle"><span></span><span></span><span></span></button>
+</div>
+</nav>
+
+<section class="hero" id="hero">
+<div class="hero-background">
+<canvas id="heroCanvas"></canvas>
+<div class="hero-gradient"></div>
+<div class="hero-grid"></div>
+</div>
+
+</section>
+
+<section class="features" id="features">
+<div class="container">
+<div class="section-header" style="text-align:center"><span class="section-tag">Core Capabilities</span><h2 class="section-title">Engineered for the Impossible</h2><p style="color:var(--fg-muted);margin-top:16px">Every system pushes the boundary of what autonomous robotics can achieve.</p></div>
+<div class="features-grid" id="featuresGrid"></div>
+</div>
+</section>
+
+<section class="specs" id="specs" style="position:relative">
+<div class="container">
+<div class="section-header" style="text-align:center"><span class="section-tag">Technical Specifications</span><h2 class="section-title">Precision in Every Dimension</h2></div>
+<div class="specs-layout" id="specsList"></div>
+</div>
+</section>
+
+<section class="about" id="about">
+<div class="container">
+<div class="about-layout">
+<div>
+<span class="section-tag">Our Philosophy</span><h2 class="section-title">Machines That Understand</h2>
+<div class="about-text"><p>We don't just build robots. We architect intelligence that perceives nuance, adapts to chaos, and learns from every interaction.</p><p>The NEXUS Series 7 represents a fundamental shift: from programmed responses to genuine understanding. Each unit ships with a neural architecture that evolves—your robot becomes more capable every day.</p></div>
+<div class="about-principles">
+<div class="principle"><span class="principle-number">01</span><div><h3>Adaptive Autonomy</h3><p>Real-time decision making in unstructured environments without human oversight.</p></div></div>
+<div class="principle"><span class="principle-number">02</span><div><h3>Continuous Learning</h3><p>Federated learning across the fleet—every unit benefits from collective experience.</p></div></div>
+<div class="principle"><span class="principle-number">03</span><div><h3>Ethical Framework</h3><p>Built-in safety constraints and transparent reasoning for human-aligned outcomes.</p></div></div>
+</div>
+</div>
+<div class="about-visual"><div class="about-orb"></div><div class="about-ring" id="aboutRing1"></div><div class="about-ring" id="aboutRing2"></div><div class="about-ring" id="aboutRing3"></div><div class="about-pulse"></div></div>
+</div>
+</div>
+</section>
+
+<section class="trust" id="trust">
+<div class="container"><div class="section-header" style="text-align:center"><span class="section-tag">Trusted by Pioneers</span><h2 class="section-title">Deployed at the Edge of Possible</h2></div>
+<div class="trust-grid" id="trustGrid"></div>
+<div class="trust-logos"><div class="logos-track" id="logosTrack"></div></div>
+</div>
+</section>
+
+<section class="contact" id="contact">
+<div class="container">
+<div class="contact-layout">
+<div>
+<span class="section-tag">Reserve Your Unit</span><h2 class="section-title">Join the First Wave</h2>
+<p class="contact-description">Series 7 production is limited to 500 units globally. Secure your position in the autonomous future.</p>
+<form class="contact-form" id="contactForm">
+<div class="form-row"><div class="form-group"><label for="name">Full Name</label><input type="text" id="name" required placeholder=" "></div><div class="form-group"><label for="email">Email Address</label><input type="email" id="email" required placeholder=" "></div></div>
+<div class="form-row"><div class="form-group"><label for="company">Organization</label><input type="text" id="company" placeholder=" "></div><div class="form-group"><label for="useCase">Primary Use Case</label><select id="useCase"><option value="">Select application</option><option value="industrial">Industrial Automation</option><option value="research">Research & Development</option><option value="exploration">Extreme Exploration</option><option value="defense">Defense & Security</option><option value="custom">Custom Application</option></select></div></div>
+<div class="form-group"><label for="message">Mission Details</label><textarea id="message" rows="4" placeholder="Describe your deployment scenario..."></textarea></div>
+<button type="submit" class="btn btn-primary btn-full" style="width:100%;justify-content:center"><span>Request Allocation</span><svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+</form>
+</div>
+<div class="contact-visual">
+<div class="contact-card">
+<div class="card-header"><span class="card-badge">Series 7 Allocation</span><span class="card-status">Limited Availability</span></div>
+<div class="card-specs"><div class="card-spec"><span class="spec-label">Units Remaining</span><span class="spec-value" id="unitsRemaining">247</span></div><div class="card-spec"><span class="spec-label">Delivery Window</span><span class="spec-value">Q2 2025</span></div><div class="card-spec"><span class="spec-label">Deposit Required</span><span class="spec-value">$25,000</span></div><div class="card-spec"><span class="spec-label">Total Investment</span><span class="spec-value">$285,000</span></div></div>
+<div class="card-includes"><h4>Includes</h4><ul><li>NEXUS Series 7 Unit</li><li>Neural Core License (Lifetime)</li><li>Federated Learning Access</li><li>24/7 Mission Support</li><li>Hardware Refresh Program</li></ul></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<footer class="footer">
+<div class="container">
+<div class="footer-grid">
+<div class="footer-brand"><a href="#" class="nav-logo"><span class="logo-icon">⬡</span><span class="logo-text">NEXUS</span></a><p>Autonomous intelligence embodied. Building the frontier of human-machine collaboration.</p>
+<div class="footer-social">
+<a href="#" class="social-link"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg></a>
+<a href="#" class="social-link"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg></a>
+<a href="#" class="social-link"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2zM4 6a2 2 0 100-4 2 2 0 000 4z"/></svg></a>
+<a href="#" class="social-link"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 11.75a29 29 0 00.46 5.33A2.78 2.78 0 003.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2 29 29 0 00.46-5.33 29 29 0 00-.46-5.33zM10 15.5l6-4.5-6-4.5z"/></svg></a>
+</div></div>
+<div class="footer-column"><h4>Product</h4><ul><li><a href="#features">Capabilities</a></li><li><a href="#specs">Specifications</a></li><li><a href="#">Documentation</a></li><li><a href="#">API Reference</a></li><li><a href="#">Changelog</a></li></ul></div>
+<div class="footer-column"><h4>Company</h4><ul><li><a href="#about">Philosophy</a></li><li><a href="#">Careers</a></li><li><a href="#">Press</a></li><li><a href="#">Blog</a></li><li><a href="#">Contact</a></li></ul></div>
+<div class="footer-column"><h4>Resources</h4><ul><li><a href="#">Whitepapers</a></li><li><a href="#">Case Studies</a></li><li><a href="#">Webinars</a></li><li><a href="#">Community</a></li><li><a href="#">Support</a></li></ul></div>
+<div class="footer-column"><h4>Legal</h4><ul><li><a href="#">Privacy Policy</a></li><li><a href="#">Terms of Service</a></li><li><a href="#">Cookie Policy</a></li><li><a href="#">Security</a></li><li><a href="#">Compliance</a></li></ul></div>
+</div>
+<div class="footer-bottom"><p>&copy; 2025 NEXUS Robotics. All rights reserved.</p><div class="footer-bottom-links"><a href="#">Do Not Sell My Data</a><a href="#">Accessibility</a></div></div>
+</div>
+</footer>
+
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script>
+(function(){
+// === CURSOR GLOW ===
+const cursorGlow = document.createElement('div');
+cursorGlow.style.cssText = 'position:fixed;top:0;left:0;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle at center,rgba(0,255,136,0.15) 0%,transparent 70%);pointer-events:none;z-index:9999;transform:translate(-50%,-50%)';
+document.body.appendChild(cursorGlow);
+document.addEventListener('mousemove',e=>{cursorGlow.style.left=e.clientX+'px';cursorGlow.style.top=e.clientY+'px';cursorGlow.style.opacity='1'});
+document.addEventListener('mouseleave',()=>cursorGlow.style.opacity='0');
+
+try {
+const canvas = document.getElementById('heroCanvas');
+if(!canvas)throw new Error('Canvas not found');
+
+const w = window.innerWidth;
+const h = window.innerHeight;
+canvas.width = w; canvas.height = h;
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, w/h, 0.1, 100);
+camera.position.set(0, 1.5, 4);
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setSize(w, h);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+renderer.setClearColor(0x050508, 0);
+
+scene.add(new THREE.AmbientLight(0x445566, 0.6));
+const dl=new THREE.DirectionalLight(0xffffff, 2.5);
+dl.position.set(2,4,4); scene.add(dl);
+const fl=new THREE.DirectionalLight(0x00ff88, 0.5);
+fl.position.set(-2,1,-2); scene.add(fl);
+
+const ring=new THREE.Mesh(
+  new THREE.RingGeometry(2.0,2.5,48),
+  new THREE.MeshBasicMaterial({color:0x00ff88,transparent:true,opacity:0.15,side:THREE.DoubleSide})
+);
+ring.rotation.x=-Math.PI/2; ring.position.y=-0.7; scene.add(ring);
+
+const ring2=new THREE.Mesh(
+  new THREE.RingGeometry(1.3,1.4,48),
+  new THREE.MeshBasicMaterial({color:0x00ff88,transparent:true,opacity:0.25,side:THREE.DoubleSide})
+);
+ring2.rotation.x=-Math.PI/2; ring2.position.y=-0.6; scene.add(ring2);
+
+const g=new THREE.BufferGeometry();
+const p=new Float32Array(300*3);
+for(let i=0;i<300*3;i++)p[i]=(Math.random()-.5)*14;
+g.setAttribute('position',new THREE.BufferAttribute(p,3));
+const pts=new THREE.Points(g,new THREE.PointsMaterial({color:0x00ff88,size:0.03,transparent:true,opacity:0.3,blending:THREE.AdditiveBlending}));
+pts.position.y=2; scene.add(pts);
+
+// SIMPLE CARTOON ROBOT
+const robot=new THREE.Group();
+
+const blue=new THREE.MeshStandardMaterial({color:0x66bbee,roughness:.3,metalness:.1});
+const green=new THREE.MeshStandardMaterial({color:0x00ff88,roughness:.3,metalness:.1,emissive:0x00ff88,emissiveIntensity:.2});
+const white=new THREE.MeshStandardMaterial({color:0xeeeeff,roughness:.4,metalness:.05});
+const gray=new THREE.MeshStandardMaterial({color:0x445566,roughness:.6});
+
+// Body
+const b=new THREE.Mesh(new THREE.CylinderGeometry(.9,1.1,1.5,14),blue);
+b.position.y=1.5; robot.add(b);
+
+const bel=new THREE.Mesh(new THREE.CircleGeometry(.45,14),new THREE.MeshStandardMaterial({color:0xaaddff,roughness:.5,side:THREE.DoubleSide}));
+bel.position.set(0,1.45,.78); robot.add(bel);
+
+// Heart
+const hrt=new THREE.Mesh(new THREE.SphereGeometry(.16,10,10),new THREE.MeshStandardMaterial({color:0x00ff88,emissive:0x00ff88,emissiveIntensity:2}));
+hrt.position.set(0,1.7,.82); robot.add(hrt);
+
+const hr=new THREE.Mesh(new THREE.RingGeometry(.22,.32,20),new THREE.MeshBasicMaterial({color:0x00ff88,transparent:true,opacity:.5,side:THREE.DoubleSide}));
+hr.position.set(0,1.7,.84); hr.rotation.x=-Math.PI/2; robot.add(hr);
+
+// Head
+const hd=new THREE.Mesh(new THREE.SphereGeometry(.7,16,16),white);
+hd.position.y=2.7; hd.scale.y=.8; robot.add(hd);
+
+// Visor
+const vs=new THREE.Mesh(new THREE.SphereGeometry(.5,14,14,0,Math.PI*2,0,.55),new THREE.MeshStandardMaterial({color:0x88ddff,roughness:.1,metalness:0,emissive:0x4488cc,emissiveIntensity:.1}));
+vs.position.set(0,2.65,.58); robot.add(vs);
+
+// Eyes
+const em=new THREE.MeshStandardMaterial({color:0x00ff88,emissive:0x00ff88,emissiveIntensity:2});
+const pm=new THREE.MeshStandardMaterial({color:0x002211,roughness:1});
+const le=new THREE.Group;
+const re=new THREE.Group;
+[le,re].forEach((e,i)=>{
+  const s=new THREE.Mesh(new THREE.SphereGeometry(.11,10,10),em);e.add(s);
+  const pu=new THREE.Mesh(new THREE.SphereGeometry(.04,6,6),pm);pu.position.set(.03,0,.07);e.add(pu);
+  e.position.set(i===0?-.2:.2,2.72,.68)
+});
+robot.add(le);robot.add(re);
+
+// Smile mouth
+for(let i=-2;i<=2;i++){
+  const d=new THREE.Mesh(new THREE.SphereGeometry(.02,6,6),gray);
+  d.position.set(i*.065,2.52,.67+i*i*.004); robot.add(d);
+}
+
+// Antenna
+const an=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.3),new THREE.MeshStandardMaterial({color:0xaaaaee,metalness:.5,roughness:.2}));
+an.position.set(0,3.2,0); robot.add(an);
+const ab=new THREE.Mesh(new THREE.SphereGeometry(.07,8,8),new THREE.MeshStandardMaterial({color:0x00ff88,emissive:0x00ff88,emissiveIntensity:2}));
+ab.position.set(0,3.38,0); robot.add(ab);
+
+// Arms
+[-.95,.95].forEach((x,i)=>{
+  const g=new THREE.Group;
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(.18,.22,.5,8),blue)).position.y=.25;
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(.13,6,6),green)).position.y=.55;
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(.16,6,6),white)).position.y=.8;
+  const t=new THREE.Mesh(new THREE.TorusGeometry(.18,.03,6,10),green);
+  t.position.y=.6;t.rotation.x=Math.PI/2;g.add(t);
+  g.position.set(x,2.0,0);
+  g.rotation.z=i===0?.35:-.35;
+  robot.add(g);
+});
+
+// Legs
+[-.25,.25].forEach((z,i)=>{
+  const g=new THREE.Group;
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(.18,.25,.35,8),blue)).position.y=.18;
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(.3,.12,.4),gray)).position.set(0,.4,.04);
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(.08,6,6),green)).position.set(0,.3,.08);
+  g.position.set(0,.65,z);
+  robot.add(g);
+});
+
+// Neck
+const nk=new THREE.Mesh(new THREE.CylinderGeometry(.12,.16,.12,8),green);
+nk.position.set(0,2.2,0); robot.add(nk);
+
+robot.scale.set(.5,.5,.5);
+robot.position.set(0,.6,0);
+scene.add(robot);
+
+// Mouse tracking
+const mouse={x:0,y:0,targetX:0,targetY:0};
+let scrollPr=0;
+let animTime=0;
+
+document.addEventListener('mousemove',e=>{
+  mouse.targetX=(e.clientX/window.innerWidth-.5)*2;
+  mouse.targetY=-(e.clientY/window.innerHeight-.5)*2;
+});
+
+window.addEventListener('scroll',()=>{
+  const dh=document.documentElement.scrollHeight-window.innerHeight;
+  scrollPr=Math.min(dh>0?window.scrollY/dh:0,1);
+},{passive:true});
+
+window.addEventListener('resize',()=>{
+  const nw=window.innerWidth,nh=window.innerHeight;
+  canvas.width=nw;canvas.height=nh;
+  camera.aspect=nw/nh;camera.updateProjectionMatrix();
+  renderer.setSize(nw,nh);
+});
+
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    const t=document.querySelector(a.getAttribute('href'));
+    if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth',block:'start'})}
+  });
+});
+
+document.getElementById('contactForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  const btn=this.querySelector('button');
+  btn.innerHTML='Allocation Requested ✓';btn.style.background='#00cc6a';
+  setTimeout(()=>{btn.innerHTML='Request Allocation';btn.style.background='';this.reset()},3000);
+});
+
+document.querySelectorAll('.nav-link').forEach(l=>l.addEventListener('click',()=>{
+  document.getElementById('navToggle').classList.remove('active');
+  document.getElementById('navLinks').classList.remove('active');
+}));
+document.getElementById('navToggle').addEventListener('click',()=>{
+  document.getElementById('navToggle').classList.toggle('active');
+  document.getElementById('navLinks').classList.toggle('active');
+});
+window.addEventListener('scroll',()=>{
+  document.getElementById('nav').classList.toggle('scrolled',window.scrollY>50);
+},{passive:true});
+
+// Stats counter
+setTimeout(()=>{
+  [99.7,120,3.2].forEach((t,i)=>{
+    const el=document.querySelectorAll('.stat-value')[i];
+    if(!el)return;
+    const isD=t%1!==0;
+    const dur=2000;
+    const st=performance.now();
+    function u(now){
+      const p=Math.min((now-st)/dur,1);
+      el.textContent=isD?(p*t).toFixed(1):Math.floor(p*t);
+      if(p<1)requestAnimationFrame(u);
+    }
+    requestAnimationFrame(u);
+  });
+},500);
+
+// Render features
+const features=[
+  {icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>',title:'Neural Perception',desc:'Multi-modal sensor fusion with real-time 3D scene understanding. Perceives beyond human vision across 16 spectral bands.',tag:'Real-time'},
+  {icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2a10 10 0 1010 10M12 6a6 6 0 106 6M12 10a2 2 0 102 2"/></svg>',title:'Autonomous Navigation',desc:'Zero-shot path planning in unmapped environments. Dynamic obstacle avoidance at 60Hz with predictive trajectory modeling.',tag:'60 Hz'},
+  {icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 7h-4.18A3 3 0 0013 4h-2a3 3 0 00-2.82 3H4v4h2v7a2 2 0 002 2h8a2 2 0 002-2v-7h2V7z"/><path d="M12 11v4M12 15l-2-2M12 15l2-2"/></svg>',title:'Dexterous Manipulation',desc:'Precision haptic feedback across 7-DOF arms. Handles objects from 1g to 50kg with sub-millimeter accuracy.',tag:'7-DOF'},
+  {icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><line x1="2" y1="8" x2="22" y2="8"/></svg>',title:'Edge Intelligence',desc:'Onboard neural compute with 200 TOPS. All inference runs locally — zero latency, zero cloud dependency, full privacy.',tag:'200 TOPS'},
+  {icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>',title:'Federated Learning',desc:'Every deployment improves the fleet. Encrypted model updates propagate learnings without exposing sensitive mission data.',tag:'Privacy-first'},
+  {icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>',title:'Situational Awareness',desc:'360-degree spatial awareness with acoustic event detection. Predicts human intent through behavioral cue analysis.',tag:'360-degree'},
+];
+const fg=document.getElementById('featuresGrid');
+features.forEach(f=>{
+  const c=document.createElement('div');
+  c.className='feature-card';c.style.position='relative';
+  c.innerHTML='<div class="feature-icon">'+f.icon+'</div><h3 class="feature-title">'+f.title+'</h3><p class="feature-desc">'+f.desc+'</p><span class="feature-tag">'+f.tag+'</span>';
+  fg.appendChild(c);
+});
+
+// Render specs
+const specs=[
+  {label:'Compute',value:'200 TOPS Neural Core',hl:true},
+  {label:'Sensors',value:'16 Spectral Bands + LiDAR',hl:false},
+  {label:'Battery',value:'120 Hours Continuous',hl:true},
+  {label:'Durability',value:'IP69K / MIL-STD-810H',hl:false},
+  {label:'Connectivity',value:'5G / Starlink / Mesh',hl:false},
+  {label:'Payload',value:'50 kg Maximum',hl:true},
+  {label:'Latency',value:'3.2 ms Decision Loop',hl:true},
+  {label:'Compliance',value:'ISO 13482 / CE / FCC',hl:false},
+];
+const sl=document.getElementById('specsList');
+const sList=document.createElement('div');
+sList.className='specs-list';
+specs.forEach(s=>{
+  const i=document.createElement('div');
+  i.className='spec-item';
+  i.innerHTML='<span class="spec-label">'+s.label+'</span><span class="spec-value'+(s.hl?' highlight':'')+'">'+s.value+'</span>';
+  sList.appendChild(i);
+});
+sl.appendChild(sList);
+
+// Render trust
+const trustItems=[
+  {name:'DARPA',desc:'Advanced robotics research partner since 2022',logo:'D'},
+  {name:'SpaceX',desc:'Mars mission robotics contractor',logo:'S'},
+  {name:'Boston Dynamics',desc:'Technology licensing agreement',logo:'B'},
+];
+const tg=document.getElementById('trustGrid');
+trustItems.forEach(t=>{
+  const c=document.createElement('div');c.className='trust-card';
+  c.innerHTML='<div class="trust-logo" style="background:linear-gradient(135deg,var(--border),var(--bg-elevated));border-radius:16px;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:1.5rem;font-weight:800;color:var(--fg-muted)">'+t.logo+'</div><h3>'+t.name+'</h3><p>'+t.desc+'</p>';
+  tg.appendChild(c);
+});
+
+// Render logos
+const lt=document.getElementById('logosTrack');
+['OpenAI','NASA','MIT','Lockheed Martin','NVIDIA','Palantir','Honeywell','Siemens','Bosch','ABB','ESA','JAXA'].forEach(n=>{
+  const d=document.createElement('div');
+  d.style.cssText='display:flex;align-items:center;font-family:var(--font-display);font-size:1.25rem;font-weight:700;color:var(--fg-subtle);opacity:.3;letter-spacing:.05em;white-space:nowrap';
+  d.textContent=n;lt.appendChild(d);
+});
+['OpenAI','NASA','MIT','Lockheed Martin','NVIDIA','Palantir','Honeywell','Siemens','Bosch','ABB','ESA','JAXA'].forEach(n=>{
+  const d=document.createElement('div');
+  d.style.cssText='display:flex;align-items:center;font-family:var(--font-display);font-size:1.25rem;font-weight:700;color:var(--fg-subtle);opacity:.3;letter-spacing:.05em;white-space:nowrap';
+  d.textContent=n;lt.appendChild(d);
+});
+
+// ANIMATION
+(function tick(){
+  animTime+=0.016;
+  mouse.x+=(mouse.targetX-mouse.x)*0.06;
+  mouse.y+=(mouse.targetY-mouse.y)*0.06;
+
+  const fy=Math.sin(animTime*0.5)*0.15;
+  const sp=scrollPr;
+  robot.position.y=-0.2+fy+sp*6;
+  robot.position.x=-sp*1.5;
+  robot.rotation.y=-sp*1.5;
+  robot.rotation.x=sp*0.4;
+  robot.rotation.z=Math.sin(animTime*0.3)*0.02;
+
+  // Wave arms
+  const wv=Math.sin(animTime*1.5)*0.3;
+  const sw=Math.sin(scrollPr*Math.PI*3)*scrollPr*0.6;
+  robot.children.forEach(c=>{
+    if(c.isObject3D&&c.position.x>0.9){
+      c.rotation.x=0.3+Math.sin(animTime*2)*0.1+sw;
+      c.rotation.y=-0.2-wv*0.15;
+      c.rotation.z=-0.35-wv*0.1;
+    }
+    if(c.isObject3D&&c.position.x<-0.9){
+      c.rotation.x=-0.4+Math.sin(animTime*2+0.5)*0.1-sw;
+      c.rotation.y=0.2+wv*0.15;
+      c.rotation.z=0.35+wv*0.1;
+    }
+  });
+
+  // Head tracking
+  robot.children.forEach(c=>{
+    if(c.isObject3D&&c.position.y>2.5&&c.type==='Group'){
+      // skip
+    }
+  });
+  hd.rotation.x+=(-mouse.y*0.3-hd.rotation.x)*0.04;
+  hd.rotation.y+=(mouse.x*0.4-hd.rotation.y)*0.04;
+
+  // Pupils
+  le.children[1].position.x=0.03+mouse.x*0.05;
+  re.children[1].position.x=0.03+mouse.x*0.05;
+  le.children[1].position.y=-mouse.y*0.05;
+  re.children[1].position.y=-mouse.y*0.05;
+
+  // Heart pulse
+  hrt.material.emissiveIntensity=1.5+Math.sin(animTime*2)*0.8;
+  hr.rotation.z=animTime*0.5;
+  hr.material.opacity=0.3+Math.sin(animTime*1.5)*0.2;
+
+  // Rings
+  ring.rotation.z=animTime*0.3;
+  ring2.rotation.z=-animTime*0.2;
+  pts.rotation.y=animTime*0.03;
+
+  renderer.render(scene,camera);
+  requestAnimationFrame(tick);
+})();
+
+// Reveal animations
+if('IntersectionObserver'in window){
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{if(e.isIntersecting)e.target.style.opacity='1'})
+  },{threshold:.1});
+  document.querySelectorAll('.feature-card,.spec-item,.trust-card,.principle').forEach((el,i)=>{
+    el.style.opacity='0';el.style.transform='translateY(30px)';
+    el.style.transition='opacity .6s ease '+i*80+'ms, transform .6s ease '+i*80+'ms';
+    obs.observe(el);
+  });
+}
+
+console.log('NEXUS 3D robot running');
+} catch(e) {
+  console.error('Three.js error:', e);
+  document.getElementById('heroCanvas').style.background='radial-gradient(circle,rgba(0,255,136,0.1) 0%,transparent 70%)';
+}
+})();
+
+</script>
+</body>
+</html>
